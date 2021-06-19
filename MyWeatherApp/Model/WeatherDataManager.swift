@@ -9,6 +9,7 @@ import Foundation
 
 protocol WeatherDataManagerDelegate {
     func weatherDataUpdated(weatherDataModel: WeatherModel)
+    func weatherDataNotReceived(error: String?)
 }
 
 struct WeatherDataManager {
@@ -35,15 +36,24 @@ struct WeatherDataManager {
     
     func onComplete(data: Data?, urlResponse: URLResponse?, error: Error?) {
         if (error != nil) {
+            // this will print some debug logs to the console
             print(error!)
+          
+            // passing the asynchronously received data to the the controller (fail)
+            self.delegate?.weatherDataNotReceived(error: error.debugDescription)
             return
         }
         
         if let responseData = data {
+            // parsing the received weather data
             if let weatherModel = parseJson(data: responseData) {
+              // passing the asynchronously received data to the the controller (success)
                 delegate?.weatherDataUpdated(weatherDataModel: weatherModel)
+                return
             }
         }
+        // passing the asynchronously received data to the the controller (fail)
+        self.delegate?.weatherDataNotReceived(error: "Something went wrong!")
     }
     
     func parseJson(data: Data) -> WeatherModel? {
